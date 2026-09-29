@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Môi trường — KHÔNG BAO GIỜ commit file này
+.env
+.env.local
+.env.*.local
+
+# Prisma generated
+backend/node_modules/
+
+# Hệ điều hành
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/settings.json
+*.log
+npm-debug.log*
+
+# Playwright (test artifacts)
+test-results/
+playwright-report/
+CLAUDE.md

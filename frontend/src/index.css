@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/*
+  Giải thích: @theme trong Tailwind v4 cho phép ta định nghĩa
+  biến CSS tùy chỉnh dùng xuyên suốt project.
+  Đây là cách "ăn sâu" font vào mọi element thông qua Tailwind.
+*/
+@theme {
+  --font-sans: 'Be Vietnam Pro', sans-serif;
+}
+
+/* Áp dụng font cho toàn bộ trang */
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}

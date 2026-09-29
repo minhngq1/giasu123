@@ -1,0 +1,88 @@
+// Prisma schema — định nghĩa toàn bộ model database cho Giasu123
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  TUTOR
+  STUDENT
+  ADMIN
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+
+  tutor   Tutor?
+  student Student?
+}
+
+model Tutor {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  fullName     String
+  avatar       String?
+  phone        String?
+  bio          String?
+  subjects     String[]
+  pricePerHour Int
+  district     String
+  city         String
+  experience   Int      @default(0)
+  rating       Float    @default(0)
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user         User                @relation(fields: [userId], references: [id])
+  applications TutorApplication[]
+}
+
+model Student {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  fullName    String
+  avatar      String?
+  phone       String?
+  grade       String
+  subjects    String[]
+  district    String
+  city        String
+  description String?
+  budget      Int
+  createdAt   DateTime @default(now())
+
+  user         User                @relation(fields: [userId], references: [id])
+  applications TutorApplication[]
+}
+
+model Subject {
+  id   String @id @default(cuid())
+  name String @unique
+}
+
+model TutorApplication {
+  id        String            @id @default(cuid())
+  tutorId   String
+  studentId String
+  status    ApplicationStatus @default(PENDING)
+  message   String?
+  createdAt DateTime          @default(now())
+
+  tutor   Tutor   @relation(fields: [tutorId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+}
