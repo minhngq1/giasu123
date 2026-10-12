@@ -5,55 +5,49 @@
     - Hàng trên : logo trái | menu ngang giữa | social phải
     - Gạch ngang
     - Hàng dưới : bản quyền trái | điều khoản · bảo mật phải
+  Dropdown Tỉnh/Môn mở LÊN TRÊN (vì footer nằm cuối trang).
 */
 import { Link } from 'react-router-dom'
+import { SOCIALS } from '../../constants/site'
+import NavDropdown from './NavDropdown'
+import { PROVINCE_ITEMS, SUBJECT_ITEMS } from './menuItems'
 
-const SOCIAL_LINK = 'https://www.beonline.com.vn/'
-
-const SOCIALS = [
-  { src: '/images/insta.svg',  label: 'Instagram', href: SOCIAL_LINK },
-  { src: '/images/fb.svg',     label: 'Facebook',  href: SOCIAL_LINK },
-  { src: '/images/tiktok.svg', label: 'TikTok',    href: SOCIAL_LINK },
-  { src: '/images/yt.svg',     label: 'YouTube',   href: SOCIAL_LINK },
-]
+const FOOTER_SOCIALS = [SOCIALS.instagram, SOCIALS.facebook, SOCIALS.tiktok, SOCIALS.youtube]
 
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-100">
-      <div className="max-w-[1336px] mx-auto px-6 lg:px-12">
+      <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-12">
 
         {/* ── Hàng trên ── */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-8">
 
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <img src="/images/logo-header.png" alt="Gia Sư 123" className="h-12 w-auto" />
+            <img src="/images/logo-header.png" alt="Gia Sư 123 — về trang chủ" width="268" height="56" className="h-12 w-auto" />
           </Link>
 
           {/* Menu ngang */}
-          <nav className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm font-medium text-gray-700">
-            <button className="flex items-center gap-1 hover:text-[#24725D] transition-colors">
-              Tỉnh/ Thành phố <span className="text-xs">⌄</span>
-            </button>
-            <button className="flex items-center gap-1 hover:text-[#24725D] transition-colors">
-              Môn học <span className="text-xs">⌄</span>
-            </button>
-            <Link to="/tutors" className="hover:text-[#24725D] transition-colors">Danh sách Gia sư</Link>
-            <Link to="/students" className="hover:text-[#24725D] transition-colors">Học sinh cần Gia sư</Link>
+          <nav aria-label="Điều hướng chân trang" className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm font-medium text-gray-700">
+            <NavDropdown label="Tỉnh/ Thành phố" items={PROVINCE_ITEMS} placement="up" />
+            <NavDropdown label="Môn học" items={SUBJECT_ITEMS} placement="up" panelClassName="w-44" />
+            <Link to="/tutors" className="hover:text-primary transition-colors">Danh sách Gia sư</Link>
+            <Link to="/students" className="hover:text-primary transition-colors">Học sinh cần Gia sư</Link>
           </nav>
 
           {/* Social */}
           <div className="flex items-center gap-3">
-            {SOCIALS.map((s) => (
+            {FOOTER_SOCIALS.map((s) => (
               <a
                 key={s.label}
                 href={s.href}
                 title={s.label}
+                aria-label={s.label}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-[#24725D] transition-colors"
+                className="group w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center hover:border-primary transition-colors"
               >
-                <img src={s.src} alt={s.label} className="w-4 h-4 object-contain brightness-0 opacity-50 group-hover:opacity-80 transition-opacity" />
+                <img src={s.src} alt="" className="w-4 h-4 object-contain brightness-0 opacity-50 group-hover:opacity-80 transition-opacity" />
               </a>
             ))}
           </div>
@@ -64,9 +58,10 @@ export default function Footer() {
           <p>
             Copyright © {new Date().getFullYear()} <span className="font-semibold text-gray-700">Giasu123.</span> All Rights Reserved
           </p>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-[#24725D] transition-colors">Điều khoản sử dụng</a>
-            <a href="#" className="hover:text-[#24725D] transition-colors">Chính sách bảo mật</a>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <Link to="/legal/terms" className="hover:text-primary transition-colors">Điều khoản sử dụng</Link>
+            <Link to="/legal/privacy" className="hover:text-primary transition-colors">Chính sách bảo mật</Link>
+            <Link to="/safety" className="hover:text-primary transition-colors">Hướng dẫn an toàn</Link>
           </div>
         </div>
 

@@ -1,91 +1,74 @@
-import { useState, useRef, useEffect } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+/*
+  NAVBAR — ĐÃ CHỐT THIẾT KẾ (CLAUDE.md). Desktop (≥1024px) giữ nguyên 2 tầng:
+    1. Top bar xanh: SĐT + Email | hộp cam 4 icon mạng xã hội
+    2. Nav trắng: logo | Tỉnh/Thành phố ⌄ · Môn học ⌄ · Danh sách Gia sư · Học sinh cần Gia sư | Đăng nhập · Đăng ký
+  Thay đổi được duyệt (2026-10-12):
+    - Dưới 1024px: thêm nút ☰ mở menu; top bar thu gọn để không tràn ngang
+    - Đã đăng nhập: thay vùng "Đăng nhập/Đăng ký" bằng UserMenu (chuông, xèng, avatar)
+    - Link mạng xã hội trỏ về GitHub dự án
+*/
+import { useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import useAuthStore from '../../stores/authStore'
+import { CONTACT, SOCIALS } from '../../constants/site'
+import NavDropdown from './NavDropdown'
+import UserMenu from './UserMenu'
+import MobileMenu from './MobileMenu'
+import { PROVINCE_ITEMS, SUBJECT_ITEMS } from './menuItems'
 
-const C = { primary: '#24725D', orange: '#FF6B35' }
-
-const SOCIAL_LINK = 'https://www.beonline.com.vn/'
-
-const SOCIALS = [
-  { src: '/images/fb.svg',     label: 'Facebook',  href: SOCIAL_LINK },
-  { src: '/images/insta.svg',  label: 'Instagram', href: SOCIAL_LINK },
-  { src: '/images/tiktok.svg', label: 'TikTok',    href: SOCIAL_LINK },
-  { src: '/images/yt.svg',     label: 'YouTube',   href: SOCIAL_LINK },
-]
-
-const PROVINCES = [
-  'Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ',
-  'An Giang', 'Bà Rịa - Vũng Tàu', 'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu',
-  'Bắc Ninh', 'Bến Tre', 'Bình Định', 'Bình Dương', 'Bình Phước',
-  'Bình Thuận', 'Cà Mau', 'Cao Bằng', 'Đắk Lắk', 'Đắk Nông',
-  'Điện Biên', 'Đồng Nai', 'Đồng Tháp', 'Gia Lai', 'Hà Giang',
-  'Hà Nam', 'Hà Tĩnh', 'Hải Dương', 'Hậu Giang', 'Hòa Bình',
-  'Hưng Yên', 'Khánh Hòa', 'Kiên Giang', 'Kon Tum', 'Lai Châu',
-  'Lâm Đồng', 'Lạng Sơn', 'Lào Cai', 'Long An', 'Nam Định',
-  'Nghệ An', 'Ninh Bình', 'Ninh Thuận', 'Phú Thọ', 'Phú Yên',
-  'Quảng Bình', 'Quảng Nam', 'Quảng Ngãi', 'Quảng Ninh', 'Quảng Trị',
-  'Sóc Trăng', 'Sơn La', 'Tây Ninh', 'Thái Bình', 'Thái Nguyên',
-  'Thanh Hóa', 'Thừa Thiên Huế', 'Tiền Giang', 'Trà Vinh', 'Tuyên Quang',
-  'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái',
-]
-
-const SUBJECTS = ['Toán', 'Lý', 'Hoá', 'Sinh', 'Văn', 'Tiếng Anh', 'Sử', 'Địa', 'Tin học', 'GDCD']
+const NAV_SOCIALS = [SOCIALS.facebook, SOCIALS.instagram, SOCIALS.tiktok, SOCIALS.youtube]
 
 export default function Navbar() {
-  const { isAuthenticated, logout } = useAuthStore()
-  const navigate = useNavigate()
+  const status = useAuthStore((s) => s.status)
+  const location = useLocation()
 
-  /* null | 'province' | 'subject' */
-  const [openMenu, setOpenMenu] = useState(null)
-  const menuRef = useRef(null)
-
-  /* Đóng dropdown khi click ra ngoài */
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpenMenu(null)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  const toggle = (name) => setOpenMenu((prev) => (prev === name ? null : name))
+  // Menu mobile gắn với URL lúc mở: chuyển trang → URL khác → menu tự đóng (không cần useEffect).
+  const here = location.pathname + location.search
+  const [mobileOpenAt, setMobileOpenAt] = useState(null)
+  const mobileOpen = mobileOpenAt === here
 
   const navLinkClass = ({ isActive }) =>
     `text-sm font-medium transition-colors duration-200 ${
-      isActive ? 'text-[#24725D] font-semibold' : 'text-gray-700 hover:text-[#24725D]'
+      isActive ? 'text-primary font-semibold' : 'text-gray-700 hover:text-primary'
     }`
 
   return (
     <header className="sticky top-0 z-50">
 
       {/* ══════════ 1. TOP BAR ══════════ */}
-      <div style={{ backgroundColor: C.primary }} className="text-white">
-        <div className="max-w-[1336px] mx-auto px-6 lg:px-12 h-14 flex items-center justify-between text-sm">
+      <div className="bg-primary text-white">
+        <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-12 h-14 flex items-center justify-between text-sm">
 
-          {/* Liên hệ trái */}
-          <div className="flex items-center gap-5">
-            <a href="tel:+84912123456" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+          {/* Liên hệ trái — mobile chỉ giữ SĐT */}
+          <div className="flex items-center gap-5 min-w-0">
+            <a href={CONTACT.phoneHref} className="flex items-center gap-2 py-3 hover:opacity-90 transition-opacity whitespace-nowrap">
               <img src="/images/phone.png" alt="" className="w-4 h-4 object-contain brightness-0 invert" />
-              <span>(+84) 912 123 456</span>
+              <span>{CONTACT.phoneDisplay}</span>
             </a>
-            <span className="w-px h-4 bg-white/30" />
-            <a href="mailto:info@gmail.com" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <span className="hidden sm:block w-px h-4 bg-white/30" />
+            <a href={`mailto:${CONTACT.email}`} className="hidden sm:flex items-center gap-2 hover:opacity-90 transition-opacity">
               <img src="/images/email-icon.png" alt="" className="w-4 h-4 object-contain brightness-0 invert" />
-              <span>info@gmail.com</span>
+              <span>{CONTACT.email}</span>
             </a>
           </div>
 
-          {/* Social trong hộp cam */}
-          <div
-            className="flex items-center gap-5 px-6 py-2.5 rounded-lg"
-            style={{ backgroundColor: C.orange }}
-          >
-            {SOCIALS.map((s) => (
-              <a key={s.label} href={s.href} title={s.label} target="_blank" rel="noopener noreferrer"
-                 className="hover:scale-110 transition-transform">
-                <img src={s.src} alt={s.label} className="w-5 h-5 object-contain brightness-0 invert" />
+          {/* Social trong hộp cam — cao kín top bar (chạm mép trên + dưới).
+              --icon = cỡ icon = khoảng cách giữa 2 icon (16px mobile, 20px từ sm). Mỗi icon đặt vừa khít ô vuông --icon.
+              Khoảng cách tạo bằng padding mỗi bên = --icon/2 của từng link (không dùng gap) → nhìn y hệt,
+              nhưng vùng bấm mỗi icon ≥ 24px và cao kín thanh (dễ chạm trên điện thoại, chuẩn WCAG 2.2). */}
+          <div className="self-stretch flex items-stretch px-2 sm:px-4.5 bg-accent flex-shrink-0 [--icon:16px] sm:[--icon:20px]">
+            {NAV_SOCIALS.map((s) => (
+              <a key={s.label} href={s.href} title={s.label} aria-label={s.label} target="_blank" rel="noopener noreferrer"
+                 className="flex items-center justify-center px-[calc(var(--icon)/2)] hover:scale-110 transition-transform">
+                <img
+                  src={s.tightSrc}
+                  alt=""
+                  className="block brightness-0 invert"
+                  style={{
+                    width: `calc(var(--icon) * ${Math.min(1, s.ratio)})`,
+                    height: `calc(var(--icon) * ${Math.min(1, 1 / s.ratio).toFixed(3)})`,
+                  }}
+                />
               </a>
             ))}
           </div>
@@ -93,126 +76,66 @@ export default function Navbar() {
       </div>
 
       {/* ══════════ 2. NAV CHÍNH ══════════ */}
-      <nav className="bg-white shadow-sm border-b border-gray-100">
-        <div className="max-w-[1336px] mx-auto px-6 lg:px-12">
-          <div className="flex items-center justify-between h-[72px]">
+      <nav className="bg-white shadow-sm border-b border-gray-100" aria-label="Điều hướng chính">
+        <div className="max-w-site mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="flex items-center justify-between h-16 lg:h-[72px] gap-3">
 
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
               <img
                 src="/images/logo-header.png"
-                alt="Gia Sư 123"
-                className="object-contain object-left"
-                style={{ height: '52px', width: 'auto' }}
+                width="268"
+                height="56"
+                alt="Gia Sư 123 — về trang chủ"
+                className="object-contain object-left h-8 min-[380px]:h-10 sm:h-[52px] w-auto"
               />
             </Link>
 
-            {/* Menu */}
-            <div ref={menuRef} className="hidden lg:flex items-center gap-8">
-
-              {/* ── Dropdown: Tỉnh / Thành phố ── */}
-              <div className="relative">
-                <button
-                  onClick={() => toggle('province')}
-                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-                    openMenu === 'province' ? 'text-[#24725D]' : 'text-gray-700 hover:text-[#24725D]'
-                  }`}
-                >
-                  Tỉnh/ Thành phố
-                  <span
-                    className="text-xs transition-transform duration-200"
-                    style={{ display: 'inline-block', transform: openMenu === 'province' ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                  >
-                    ⌄
-                  </span>
-                </button>
-
-                {openMenu === 'province' && (
-                  <ul className="absolute top-full left-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 max-h-72 overflow-y-auto py-1.5">
-                    {PROVINCES.map((p) => (
-                      <li key={p}>
-                        <button
-                          onClick={() => {
-                            navigate(`/tutors?city=${encodeURIComponent(p)}`)
-                            setOpenMenu(null)
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#E8F5F1] hover:text-[#24725D] transition-colors"
-                        >
-                          {p}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              {/* ── Dropdown: Môn học ── */}
-              <div className="relative">
-                <button
-                  onClick={() => toggle('subject')}
-                  className={`flex items-center gap-1 text-sm font-medium transition-colors ${
-                    openMenu === 'subject' ? 'text-[#24725D]' : 'text-gray-700 hover:text-[#24725D]'
-                  }`}
-                >
-                  Môn học
-                  <span
-                    className="text-xs transition-transform duration-200"
-                    style={{ display: 'inline-block', transform: openMenu === 'subject' ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                  >
-                    ⌄
-                  </span>
-                </button>
-
-                {openMenu === 'subject' && (
-                  <ul className="absolute top-full left-0 mt-3 w-44 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-1.5">
-                    {SUBJECTS.map((s) => (
-                      <li key={s}>
-                        <button
-                          onClick={() => {
-                            navigate(`/tutors?subject=${encodeURIComponent(s)}`)
-                            setOpenMenu(null)
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#E8F5F1] hover:text-[#24725D] transition-colors"
-                        >
-                          {s}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
+            {/* Menu desktop */}
+            <div className="hidden lg:flex items-center gap-8">
+              <NavDropdown label="Tỉnh/ Thành phố" items={PROVINCE_ITEMS} />
+              <NavDropdown label="Môn học" items={SUBJECT_ITEMS} panelClassName="w-44" />
               <NavLink to="/tutors"   className={navLinkClass}>Danh sách Gia sư</NavLink>
               <NavLink to="/students" className={navLinkClass}>Học sinh cần Gia sư</NavLink>
             </div>
 
-            {/* Auth */}
-            <div className="flex items-center gap-5">
-              {isAuthenticated ? (
-                <button
-                  onClick={logout}
-                  className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors"
-                >
-                  Đăng xuất
-                </button>
+            {/* Auth + nút menu mobile */}
+            <div className="flex items-center gap-2 min-[380px]:gap-3 sm:gap-5">
+              {status === 'authenticated' ? (
+                <UserMenu />
               ) : (
-                <>
-                  <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-[#24725D] transition-colors">
+                // Lúc đang khôi phục phiên: giữ chỗ nhưng ẩn → không "nháy" nút Đăng nhập rồi đổi sang avatar
+                <div className={`flex items-center gap-5 ${status === 'loading' ? 'invisible' : ''}`}>
+                  <Link to="/login" className="hidden sm:inline text-sm font-medium text-gray-700 hover:text-primary transition-colors">
                     Đăng nhập
                   </Link>
                   <Link
                     to="/register-tutor"
-                    style={{ backgroundColor: C.primary }}
-                    className="flex items-center px-6 py-2 text-white text-sm font-semibold rounded-full hover:opacity-90 transition-opacity"
+                    className="flex items-center px-4 min-[380px]:px-5 py-2 sm:px-7 sm:py-2.5 bg-primary text-white text-sm font-semibold rounded-full hover:opacity-90 transition-opacity whitespace-nowrap"
                   >
                     Đăng ký
                   </Link>
-                </>
+                </div>
               )}
+
+              <button
+                type="button"
+                onClick={() => setMobileOpenAt(mobileOpen ? null : here)}
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
+                className="lg:hidden w-10 h-10 -mr-2 flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6" aria-hidden="true">
+                  {mobileOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+                </svg>
+              </button>
             </div>
 
           </div>
         </div>
+
+        {mobileOpen && <MobileMenu isLoggedIn={status === 'authenticated'} />}
       </nav>
     </header>
   )
