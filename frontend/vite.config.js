@@ -12,4 +12,10 @@ export default defineConfig({
       },
     },
   },
+  // Vitest đọc chung file cấu hình với Vite → test chạy với đúng plugin React như app thật.
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+    css: false,
+  },
 })

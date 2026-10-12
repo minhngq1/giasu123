@@ -26,3 +26,4 @@ npm-debug.log*
 test-results/
 playwright-report/
 CLAUDE.md
+docs/architecture/README.md

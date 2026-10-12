@@ -1,15 +1,34 @@
 @import "tailwindcss";
 
 /*
-  Giải thích: @theme trong Tailwind v4 cho phép ta định nghĩa
-  biến CSS tùy chỉnh dùng xuyên suốt project.
-  Đây là cách "ăn sâu" font vào mọi element thông qua Tailwind.
+  Design token — nguồn duy nhất cho màu, font, khung nội dung.
+  Tailwind v4 tự sinh class từ các biến trong @theme:
+    --color-primary  → bg-primary, text-primary, border-primary, ring-primary...
+    --container-site → max-w-site
+  Muốn đổi màu thương hiệu: chỉ sửa ở đây. Giá trị lấy từ UI đã duyệt (CLAUDE.md, 08-frontend.md mục 1).
 */
 @theme {
   --font-sans: 'Be Vietnam Pro', sans-serif;
+
+  --color-primary: #24725D;        /* top bar, nút chính, link active */
+  --color-primary-soft: #E8F5F1;   /* nền bạc hà nhạt, chip nhẹ */
+  --color-primary-border: #B9D8CD; /* viền nhẹ, chấm slider */
+  --color-mint: #E3F2EB;           /* nền section cảm nhận */
+  --color-accent: #FF6B35;         /* cam nhấn: hộp social, nút toggle, icon stats */
+  --color-accent-soft: #FFF1EA;    /* nền pill cam */
+  --color-accent-badge: #FCE7DA;   /* nền badge hero */
+  --color-peach: #FFF4EC;          /* nền hero kem */
+  --color-ink: #15384A;            /* chữ tiêu đề đậm */
+
+  --container-site: 1336px;        /* khung nội dung toàn site */
 }
 
-/* Áp dụng font cho toàn bộ trang */
 body {
   font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* Focus nhìn thấy được khi dùng bàn phím (a11y), không hiện khi click chuột */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
